@@ -6,9 +6,12 @@ import json
 import re
 import secrets
 import subprocess
+import threading
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from collections import deque
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -17,6 +20,8 @@ from pathlib import Path
 监听端口 = 8765
 商家根 = "https://www.xrkapp.cc/v1/api"
 允许接口 = ("balance", "get_mobile", "get_verifycode", "feedback")
+转发方式 = "排队"  # 改成 "不排队" 就直接转发
+每秒放行 = 9
 公钥原文 = """-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3yLX36pjyTaPBcqAk1qS
 ++MxPI8/FNHALIeG4DPv8MYeUk0L7TuvtgF6AypcqP1yqVBAVvgPJWofWjMuthSx
@@ -46,6 +51,81 @@ def 写日志(参_文本):
     if len(日志行) > 300:
         del 日志行[:-300]
     print(参_文本, flush=True)
+
+
+def _空队():
+    return {"锁": threading.Lock(), "排队": deque(), "发出时间": []}
+
+
+队伍 = {
+    "get_mobile": _空队(),
+    "get_verifycode": _空队(),
+    "balance": _空队(),
+    "feedback": _空队(),
+    "login": _空队(),
+}
+
+
+def 清空排队():
+    """清掉还在排的人和这一秒已经放行的记录。"""
+
+    for 队 in 队伍.values():
+        with 队["锁"]:
+            队["排队"].clear()
+            del 队["发出时间"][:]
+
+
+def 排队放行(参_接口):
+    """同一接口按先来后到，每秒最多放行 9 次。"""
+
+    队 = 队伍[参_接口]
+    事件 = threading.Event()
+    with 队["锁"]:
+        队["排队"].append(事件)
+        我是队首 = len(队["排队"]) == 1
+    if 我是队首:
+        事件.set()
+    try:
+        事件.wait()
+        while True:
+            with 队["锁"]:
+                现在 = time.monotonic()
+                队["发出时间"][:] = [点 for 点 in 队["发出时间"] if 现在 - 点 < 1]
+                if len(队["发出时间"]) < 每秒放行:
+                    队["发出时间"].append(现在)
+                    队["排队"].popleft()
+                    if 队["排队"]:
+                        队["排队"][0].set()
+                    return
+                再等 = 1 - (现在 - 队["发出时间"][0])
+            time.sleep(max(再等, 0.01))
+    except BaseException:
+        with 队["锁"]:
+            if 队["排队"] and 队["排队"][0] is 事件:
+                队["排队"].popleft()
+                if 队["排队"]:
+                    队["排队"][0].set()
+            else:
+                try:
+                    队["排队"].remove(事件)
+                except ValueError:
+                    pass
+        raise
+
+
+def 直接放行(参_接口):
+    """不排队，马上转发。"""
+
+    return
+
+
+def 放行(参_接口):
+    """按转发方式选择排队或不排队。"""
+
+    if 转发方式 == "排队":
+        排队放行(参_接口)
+    elif 转发方式 == "不排队":
+        直接放行(参_接口)
 
 
 def _读长度(参_数据, 参_位置):
@@ -122,6 +202,7 @@ def 登录(参_原文):
         写日志("转发 login 失败")
         return 502, "请求失败".encode("utf-8"), "text/plain; charset=utf-8"
     正文 = json.dumps({"username": 账号, "password": 密文}, ensure_ascii=False).encode("utf-8")
+    放行("login")
     写日志("转发 login")
     请求 = urllib.request.Request(
         登录地址(),
@@ -150,6 +231,7 @@ def 转发(参_接口, 参_查询):
     地址 = 商家根.rstrip("/") + "/" + 参_接口
     if 参_查询:
         地址 += "?" + 参_查询
+    放行(参_接口)
     写日志(f"转发 {参_接口}")
     请求 = urllib.request.Request(地址, method="GET")
     try:

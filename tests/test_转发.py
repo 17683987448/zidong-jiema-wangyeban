@@ -4,6 +4,7 @@
 import json
 import sys
 import threading
+import time
 import unittest
 import urllib.error
 import urllib.request
@@ -81,7 +82,10 @@ class 转发测试(unittest.TestCase):
         self.假线程 = threading.Thread(target=self.假服务.serve_forever, daemon=True)
         self.假线程.start()
         self.原根 = 网页.商家根
+        self.原方式 = 网页.转发方式
         网页.商家根 = f"http://127.0.0.1:{self.假服务.server_address[1]}/v1/api"
+        网页.转发方式 = "排队"
+        网页.清空排队()
         网页.日志行.clear()
         self.服务 = 网页.做服务("127.0.0.1", 0)
         self.线程 = threading.Thread(target=self.服务.serve_forever, daemon=True)
@@ -94,6 +98,8 @@ class 转发测试(unittest.TestCase):
         self.假服务.shutdown()
         self.假服务.server_close()
         网页.商家根 = self.原根
+        网页.转发方式 = self.原方式
+        网页.清空排队()
 
     def _取(self, 参_路径):
         with urllib.request.urlopen(self.本机 + 参_路径, timeout=5) as 响应:
@@ -180,6 +186,51 @@ class 转发测试(unittest.TestCase):
         self.assertNotIn(明文, 拼起来)
         self.assertNotIn("issued-token", 拼起来)
         self.assertNotIn("zhang", 拼起来)
+
+    def test_排队时同一接口每秒最多九次且别的接口不等(self):
+        时间 = []
+        锁 = threading.Lock()
+
+        def 排一个():
+            网页.放行("get_mobile")
+            with 锁:
+                时间.append(time.monotonic())
+
+        线程们 = [threading.Thread(target=排一个) for _ in range(12)]
+        for 线程 in 线程们:
+            线程.start()
+        time.sleep(0.05)
+        登录开始 = time.monotonic()
+        网页.放行("login")
+        self.assertLess(time.monotonic() - 登录开始, 0.3)
+        for 线程 in 线程们:
+            线程.join(timeout=3)
+        self.assertEqual(len(时间), 12)
+        时间.sort()
+        self.assertLess(时间[8] - 时间[0], 0.5)
+        self.assertGreaterEqual(时间[9] - 时间[0], 0.9)
+        for 点 in 时间:
+            窗口 = [t for t in 时间 if 0 <= 点 - t < 1]
+            self.assertLessEqual(len(窗口), 9)
+
+    def test_不排队时马上放行(self):
+        网页.转发方式 = "不排队"
+        时间 = []
+        锁 = threading.Lock()
+
+        def 排一个():
+            网页.放行("get_mobile")
+            with 锁:
+                时间.append(time.monotonic())
+
+        线程们 = [threading.Thread(target=排一个) for _ in range(12)]
+        开始 = time.monotonic()
+        for 线程 in 线程们:
+            线程.start()
+        for 线程 in 线程们:
+            线程.join(timeout=2)
+        self.assertEqual(len(时间), 12)
+        self.assertLess(max(时间) - 开始, 0.5)
 
     def test_首页能打开(self):
         状态, 正文 = self._取("/")
