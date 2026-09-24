@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>接码取号工作台</title>
+  <link rel="stylesheet" href="样式.css">
+</head>
+<body>
+  <div id="根">
+    <header class="卡片 顶栏">
+      <div class="图标">码</div>
+      <div class="标题列">
+        <div id="标题">接码取号工作台</div>
+        <div class="副标题">工作台持续取号与复制</div>
+      </div>
+      <span id="运行胶囊" class="胶囊 灰">已暂停</span>
+      <input id="账号框" type="text" placeholder="平台账号" autocomplete="username">
+      <input id="密码框" type="password" placeholder="平台密码" autocomplete="current-password">
+      <span id="连接状态" class="胶囊 灰">未连接</span>
+      <button id="连接按钮" type="button" class="次按钮">连接账号</button>
+      <span id="余额标签" class="弱">余额  —</span>
+      <label class="演示"><input id="演示框" type="checkbox">演示模式</label>
+      <button id="导出按钮" type="button" class="文字按钮">导出 CSV</button>
+    </header>
+
+    <div class="中排">
+      <section class="卡片 左侧">
+        <div class="参数行">
+          <label>目标<input id="目标框" type="number" min="1" max="9999" value="10"></label>
+          <label>间隔<span class="带单位"><input id="间隔框" type="number" min="1" max="60" value="1"><span>秒</span></span></label>
+        </div>
+        <div class="参数行">
+          <label>线程<input id="线程框" type="number" min="1" max="16" value="1"></label>
+          <label>短信轮询<span class="带单位"><input id="轮询框" type="number" min="1" max="60" value="5"><span>分钟</span></span></label>
+        </div>
+        <button id="开始按钮" type="button" class="主按钮">开始新批次</button>
+        <div class="按钮行">
+          <button id="继续按钮" type="button" class="次按钮">继续取号</button>
+          <button id="停止按钮" type="button" class="停按钮" disabled>停止</button>
+        </div>
+        <div id="状态说明" class="弱">已暂停</div>
+      </section>
+
+      <section class="卡片 中间">
+        <div class="当前顶">
+          <span id="当前状态" class="胶囊 灰">待使用</span>
+          <span id="当前信息" class="弱">还没有号码</span>
+        </div>
+        <div id="大号">—</div>
+        <div id="验证码标签">验证码  —</div>
+        <div id="短信标签"></div>
+        <div class="按钮行 居中">
+          <button id="复制按钮" type="button" class="主按钮" disabled>复制号码</button>
+          <button id="复制码按钮" type="button" class="次按钮" disabled>复制验证码</button>
+          <button id="标记按钮" type="button" class="次按钮" disabled>标记已用</button>
+        </div>
+      </section>
+
+      <section class="卡片 右侧">
+        <div class="统计"><span class="弱">本批进度</span><b id="批次标签">0 / 10</b></div>
+        <div class="统计"><span class="弱">待使用</span><b id="待用标签">0</b></div>
+        <div class="统计"><span class="弱">轮询中</span><b id="轮询标签">0</b></div>
+        <div class="统计"><span class="弱">已收码</span><b id="收码标签">0</b></div>
+        <div class="统计"><span class="弱">已使用</span><b id="已用标签">0</b></div>
+      </section>
+    </div>
+
+    <section class="卡片 表格卡">
+      <div class="工具">
+        <div class="筛选组">
+          <button type="button" class="筛选按钮 选中" data-筛选="全部">全部号码</button>
+          <button type="button" class="筛选按钮" data-筛选="待使用">待使用</button>
+          <button type="button" class="筛选按钮" data-筛选="已收码">已收码</button>
+          <button type="button" class="筛选按钮" data-筛选="已使用">已使用</button>
+        </div>
+        <input id="搜索框" type="search" placeholder="搜索号码或地区...">
+        <span id="条数标签" class="弱">共 0 条</span>
+        <button id="清空按钮" type="button" class="文字按钮">清空</button>
+        <button id="日志按钮" type="button" class="文字按钮">运行日志</button>
+      </div>
+      <div class="表框">
+        <table>
+          <thead>
+            <tr>
+              <th>状态</th>
+              <th>手机号码</th>
+              <th>归属地</th>
+              <th>获取时间</th>
+              <th>验证码 / 收码</th>
+              <th>短信</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="表体"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <div id="日志窗" hidden>
+    <div class="日志卡">
+      <div class="日志顶"><b>运行日志</b><button id="关日志" type="button" class="文字按钮">关闭</button></div>
+      <pre id="日志框"></pre>
+    </div>
+  </div>
+  <div id="更多菜单" hidden></div>
+  <script src="脚本.js"></script>
+</body>
+</html>

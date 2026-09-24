@@ -1,0 +1,168 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: #14181a;
+  color: #e3ebe6;
+  font: 13px "Microsoft YaHei UI", "PingFang SC", sans-serif;
+}
+button, input { font: inherit; color: inherit; }
+#根 {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+.卡片 {
+  background: #1d2326;
+  border: 1px solid #2c3438;
+  border-radius: 12px;
+}
+.弱 { color: #8a9a93; }
+#状态说明.红 { color: #ff5c52; font-weight: 700; }
+#状态说明.绿 { color: #3dff9a; font-weight: 700; }
+#状态说明.金 { color: #f0c14b; font-weight: 700; }
+.副标题 { color: #8a9a93; font-size: 12px; }
+#标题 { font-size: 16px; font-weight: 700; }
+.顶栏 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+}
+.图标 {
+  width: 36px; height: 36px;
+  display: grid; place-items: center;
+  background: #1fa463; color: white;
+  border-radius: 8px; font-weight: 700;
+}
+.标题列 { display: flex; flex-direction: column; }
+#账号框, #密码框, #搜索框, input[type="number"] {
+  border: 1px solid #2c3438;
+  border-radius: 8px;
+  background: #161b1d;
+  min-height: 32px;
+  padding: 4px 10px;
+}
+#账号框, #密码框 { min-width: 140px; flex: 1; }
+#账号框[readonly], #密码框[readonly] { color: #8a9a93; }
+.胶囊 {
+  border-radius: 10px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+.胶囊.绿 { background: #173a2a; color: #3ecf8e; }
+.胶囊.红 { background: #3d1f1d; color: #f08a80; }
+.胶囊.金 { background: #3a3220; color: #c4a574; }
+.胶囊.灰 { background: #2a3134; color: #9aa9a2; }
+.演示 { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+button {
+  border-radius: 8px;
+  cursor: pointer;
+}
+button:disabled { cursor: default; }
+.主按钮 {
+  background: #1fa463; color: white; border: none;
+  padding: 8px 14px; font-weight: 600;
+}
+.主按钮:disabled { background: #2e4a3c; color: #7f9a8c; }
+.次按钮 {
+  background: transparent; color: #3ecf8e;
+  border: 1px solid #2f6e50; padding: 8px 12px;
+}
+.次按钮:disabled { color: #3f5a4c; border-color: #2c3438; }
+.停按钮 {
+  background: transparent; color: #e5675d;
+  border: 1px solid #7a3a35; padding: 8px 12px;
+}
+.停按钮:disabled { color: #5e3c39; border-color: #2c3438; }
+.小按钮 {
+  background: transparent; color: #3ecf8e;
+  border: 1px solid #2c3438; padding: 4px 10px;
+}
+.小按钮:disabled { color: #4a5752; }
+.文字按钮 {
+  background: transparent; border: none; color: #6fbf98; padding: 4px 8px;
+}
+.中排 { display: flex; gap: 12px; align-items: stretch; }
+.左侧 { width: 300px; flex: none; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.中间 { flex: 1; min-width: 0; padding: 16px 20px; display: flex; flex-direction: column; gap: 8px; }
+.右侧 { width: 180px; flex: none; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.参数行 { display: flex; gap: 10px; }
+.参数行 label { flex: 1; display: flex; flex-direction: column; gap: 4px; color: #8a9a93; }
+.参数行 input { width: 100%; text-align: center; }
+.带单位 { display: flex; align-items: center; gap: 6px; color: #e3ebe6; }
+.按钮行 { display: flex; gap: 8px; }
+.按钮行 > button { flex: 1; }
+.按钮行.居中 { justify-content: center; margin-top: auto; }
+.按钮行.居中 > button { flex: 0 0 auto; }
+.当前顶 { display: flex; align-items: center; gap: 8px; }
+#当前信息 { margin-left: auto; }
+#大号 { font-size: 32px; font-weight: 700; text-align: center; word-break: break-all; }
+#验证码标签 { font-size: 26px; font-weight: 700; color: #3ecf8e; text-align: center; }
+#短信标签 { color: #8a9a93; text-align: center; word-break: break-all; min-height: 1.2em; }
+.统计 b { display: block; font-size: 22px; }
+.表格卡 { flex: 1; min-height: 240px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.工具 { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.筛选组 { display: flex; gap: 4px; }
+.筛选按钮 { background: transparent; border: none; color: #8a9a93; padding: 6px 12px; }
+.筛选按钮.选中 { background: #2c3438; color: #3ecf8e; font-weight: 600; }
+#搜索框 { flex: 1; min-width: 160px; }
+.表框 { overflow: auto; flex: 1; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 8px 6px; text-align: center; white-space: nowrap; }
+th { color: #8a9a93; font-weight: 500; background: #161b1d; position: sticky; top: 0; }
+tbody tr:nth-child(even) { background: #20272a; }
+tbody tr.选中 { background: #24453a; }
+td.短信 { max-width: 280px; overflow: hidden; text-overflow: ellipsis; }
+.操作 { display: flex; gap: 6px; justify-content: center; }
+.绿字 { color: #3ecf8e; font-weight: 700; }
+.红字 { color: #f08a80; }
+.金字 { color: #c4a574; }
+.黄字 { color: #e0b050; }
+.蓝字 { color: #5aa9e6; }
+.灰字 { color: #6b7a74; }
+#日志窗 {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: grid; place-items: center;
+  padding: 16px;
+}
+#日志窗[hidden] { display: none; }
+.日志卡 {
+  width: min(520px, 100%);
+  height: min(360px, 80vh);
+  background: #1d2326;
+  border: 1px solid #2c3438;
+  border-radius: 12px;
+  display: flex; flex-direction: column;
+}
+.日志顶 { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; }
+#日志框 {
+  margin: 0; padding: 0 12px 12px;
+  overflow: auto; white-space: pre-wrap; color: #c9d6d0;
+}
+#更多菜单 {
+  position: fixed;
+  background: #1d2326;
+  border: 1px solid #2c3438;
+  border-radius: 8px;
+  padding: 4px;
+  display: flex; flex-direction: column;
+  min-width: 120px;
+  z-index: 5;
+}
+#更多菜单[hidden] { display: none; }
+#更多菜单 button {
+  background: transparent; border: none; text-align: left; padding: 8px 10px;
+}
+#更多菜单 button:disabled { color: #5c6a64; }
+@media (max-width: 900px) {
+  .中排 { flex-direction: column; }
+  .左侧, .右侧 { width: 100%; }
+  .右侧 { flex-direction: row; flex-wrap: wrap; }
+  .统计 { min-width: 30%; }
+  #大号 { font-size: 28px; }
+  .按钮行.居中 { flex-wrap: wrap; }
+}
