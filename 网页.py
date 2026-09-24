@@ -20,7 +20,7 @@ from pathlib import Path
 监听端口 = 8765
 商家根 = "https://www.xrkapp.cc/v1/api"
 允许接口 = ("balance", "get_mobile", "get_verifycode", "feedback")
-转发方式 = "排队"  # 改成 "不排队" 就直接转发
+转发方式 = "不排队"  # 改成 "不排队" 就直接转发
 每秒放行 = 9
 公钥原文 = """-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3yLX36pjyTaPBcqAk1qS
