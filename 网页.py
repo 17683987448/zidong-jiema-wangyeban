@@ -6,6 +6,7 @@ import json
 import re
 import secrets
 import subprocess
+import sys
 import threading
 import time
 import urllib.error
@@ -44,6 +45,9 @@ YQIDAQAB
     ".js": "text/javascript; charset=utf-8",
 }
 日志行 = []
+次数文件 = Path(__file__).resolve().parent / "请求次数.json"
+次数锁 = threading.Lock()
+次数接口 = ("get_mobile", "get_verifycode", "balance", "feedback", "login")
 
 
 def 写日志(参_文本):
@@ -51,6 +55,46 @@ def 写日志(参_文本):
     if len(日志行) > 300:
         del 日志行[:-300]
     print(参_文本, flush=True)
+
+
+def 读次数():
+    """读已经记下的次数。文件没有或坏了就当全是 0。"""
+
+    try:
+        数据 = json.loads(次数文件.read_text(encoding="utf-8"))
+    except Exception:
+        数据 = {}
+    if not isinstance(数据, dict):
+        数据 = {}
+    结果 = {}
+    for 名 in 次数接口:
+        try:
+            结果[名] = int(数据.get(名) or 0)
+        except (TypeError, ValueError):
+            结果[名] = 0
+    return 结果
+
+
+def 记下次数(参_接口):
+    """每真正发出一次商家请求就加 1，写到请求次数.json。"""
+
+    if 参_接口 not in 次数接口:
+        return
+    with 次数锁:
+        次数 = 读次数()
+        次数[参_接口] += 1
+        临时 = 次数文件.with_name(次数文件.name + ".tmp")
+        临时.write_text(json.dumps(次数, ensure_ascii=False, indent=2), encoding="utf-8")
+        临时.replace(次数文件)
+
+
+def 次数文本():
+    """给命令行看的几行字。"""
+
+    次数 = 读次数()
+    行 = [f"{名}  {次数[名]}" for 名 in 次数接口]
+    行.append(f"合计  {sum(次数.values())}")
+    return "\n".join(行)
 
 
 def _空队():
@@ -204,6 +248,7 @@ def 登录(参_原文):
     正文 = json.dumps({"username": 账号, "password": 密文}, ensure_ascii=False).encode("utf-8")
     放行("login")
     写日志("转发 login")
+    记下次数("login")
     请求 = urllib.request.Request(
         登录地址(),
         data=正文,
@@ -233,6 +278,7 @@ def 转发(参_接口, 参_查询):
         地址 += "?" + 参_查询
     放行(参_接口)
     写日志(f"转发 {参_接口}")
+    记下次数(参_接口)
     请求 = urllib.request.Request(地址, method="GET")
     try:
         with urllib.request.urlopen(请求, timeout=15) as 响应:
@@ -344,4 +390,7 @@ def 启动():
 
 
 if __name__ == "__main__":
-    启动()
+    if len(sys.argv) > 1 and sys.argv[1] == "次数":
+        print(次数文本())
+    else:
+        启动()

@@ -3,6 +3,7 @@
 
 import json
 import sys
+import tempfile
 import threading
 import time
 import unittest
@@ -87,6 +88,9 @@ class 转发测试(unittest.TestCase):
         网页.转发方式 = "排队"
         网页.清空排队()
         网页.日志行.clear()
+        self.次数目录 = tempfile.TemporaryDirectory()
+        self.原次数文件 = 网页.次数文件
+        网页.次数文件 = Path(self.次数目录.name) / "请求次数.json"
         self.服务 = 网页.做服务("127.0.0.1", 0)
         self.线程 = threading.Thread(target=self.服务.serve_forever, daemon=True)
         self.线程.start()
@@ -99,6 +103,8 @@ class 转发测试(unittest.TestCase):
         self.假服务.server_close()
         网页.商家根 = self.原根
         网页.转发方式 = self.原方式
+        网页.次数文件 = self.原次数文件
+        self.次数目录.cleanup()
         网页.清空排队()
 
     def _取(self, 参_路径):
@@ -162,6 +168,12 @@ class 转发测试(unittest.TestCase):
         self.assertNotIn("secret-token", 正文.decode("utf-8"))
         self.assertNotIn("secret-token", "\n".join(网页.日志行))
         self.assertIn("转发 balance 失败", 网页.日志行)
+        self.assertEqual(网页.读次数()["balance"], 1)
+
+    def test_乱路径不加次数(self):
+        with self.assertRaises(urllib.error.HTTPError):
+            self._取("/api/other")
+        self.assertEqual(sum(网页.读次数().values()), 0)
 
     def test_登录会加密密码且日志没有密码和token(self):
         import base64
@@ -186,6 +198,17 @@ class 转发测试(unittest.TestCase):
         self.assertNotIn(明文, 拼起来)
         self.assertNotIn("issued-token", 拼起来)
         self.assertNotIn("zhang", 拼起来)
+        self.assertEqual(网页.读次数()["login"], 1)
+
+    def test_命令能打出各接口次数(self):
+        self._取("/api/get_mobile?token=secret-token")
+        self._取("/api/get_mobile?token=secret-token")
+        self._取("/api/balance?token=secret-token")
+        文本 = 网页.次数文本()
+        self.assertIn("get_mobile  2", 文本)
+        self.assertIn("balance  1", 文本)
+        self.assertIn("get_verifycode  0", 文本)
+        self.assertIn("合计  3", 文本)
 
     def test_排队时同一接口每秒最多九次且别的接口不等(self):
         时间 = []

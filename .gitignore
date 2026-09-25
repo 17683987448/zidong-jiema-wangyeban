@@ -5,3 +5,4 @@ build/
 dist/
 logs/
 *.tmp
+请求次数.json
